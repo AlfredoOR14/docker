@@ -1,5 +1,5 @@
 # Construcción
-FROM eclipse-temurin:17-jdk-alpine as builder
+FROM mcr.microsoft.com/java/jdk:17u2-zulu-alpine as builder
 
 WORKDIR /opt/app
 
@@ -21,7 +21,7 @@ COPY ./src ./src
 RUN ./mvnw clean install
 
 # Producción
-FROM eclipse-temurin:17-jre-alpine
+FROM mcr.microsoft.com/java/jre:17u2-zulu-alpine
 
 WORKDIR /opt/app
 
