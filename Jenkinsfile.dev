@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Construir la imagen Docker usando el Dockerfile en el directorio actual
+                    docker.build("demo")
+                }
+            }
+        }
+        stage('Extract JAR from Image') {
+            steps {
+                script {
+                    // Crear un contenedor temporal a partir de la imagen construida sin iniciarla
+                    def tempContainer = docker.createContainer("demo")
+                    // Copiar el archivo JAR desde el contenedor a la ruta específica en el workspace
+                    // Asegúrate de reemplazar 'ruta_especifica_en_workspace' con la ruta real donde deseas guardar el JAR
+                    tempContainer.copyFromContainer("/opt/app/*.jar", "ruta_especifica_en_workspace")
+                    // Eliminar el contenedor temporal
+                    tempContainer.remove()
+                }
+            }
+        }
+    }
+    post {
+        always {
+            
+        }
+    }
+}
