@@ -1,28 +1,9 @@
 pipeline {
-    agent any
-
-    environment {
-        DOCKERFILE_PATH = '.'
-        IMAGE_NAME = 'demo'
-        WORKSPACE_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\docker'
-    }
-
+    agent { dockerfile true }
     stages {
-        stage('Build Docker Image') {
+        stage('Test') {
             steps {
-                bat "docker build -t ${IMAGE_NAME} -f ${DOCKERFILE_PATH}\\Dockerfile ."
-            }
-        }
-        stage('Extract JAR from Image') {
-            steps {
-                script {
-                    // Crear un contenedor temporal a partir de la imagen construida sin iniciarlo
-                    def tempContainerId = bat(script: "docker create ${IMAGE_NAME}", returnStatus: true).trim()
-                    // Copiar el archivo JAR desde el contenedor a la ruta específica en el workspace
-                    bat "docker cp ${tempContainerId}:/opt/app/*.jar ${WORKSPACE_PATH}"
-                    // Eliminar el contenedor temporal
-                    bat "docker rm ${tempContainerId}"
-                }
+                bat 'java --version'
             }
         }
     }
