@@ -1,4 +1,4 @@
-# Etapa de construcción
+# Construcción
 FROM eclipse-temurin:17-jdk-alpine as builder
 
 WORKDIR /opt/app
@@ -6,18 +6,21 @@ WORKDIR /opt/app
 # Copiar archivos de configuración Maven
 COPY .mvn/ .mvn
 
-# Copiar el archivo de configuración Maven Wrapper y el archivo POM
-COPY mvnw .
-COPY pom.xml .
+# Copiar el script Maven Wrapper y el archivo POM
+COPY mvnw ./
+COPY pom.xml ./
+
+# Asegurarse de que el script tenga permisos de ejecución
+RUN chmod +x mvnw
 
 # Descargar dependencias de Maven
 RUN ./mvnw dependency:go-offline
 
 # Copiar el código fuente y compilar la aplicación
 COPY ./src ./src
-RUN chmod +x mvnw && ./mvnw clean install
+RUN ./mvnw clean install
 
-# Etapa de producción
+# Producción
 FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /opt/app
