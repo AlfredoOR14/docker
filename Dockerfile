@@ -1,13 +1,28 @@
-FROM eclipse-temurin:17-jdk-jammy as builder
+# Primera etapa: Construcción
+FROM eclipse-temurin:17-jdk-alpine as builder
+
 WORKDIR /opt/app
+
+# Copiar los archivos necesarios
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
-RUN ./mvnw dependency:go-offline
 COPY ./src ./src
+
+# Asegurarse de que mvnw tiene permisos de ejecución
+RUN chmod +x mvnw
+
+# Descargar las dependencias y compilar el proyecto
 RUN ./mvnw clean install
- 
-FROM eclipse-temurin:17-jre-jammy
+
+# Segunda etapa: Ejecución
+FROM eclipse-temurin:17-jre-alpine
+
 WORKDIR /opt/app
+
 EXPOSE 8080
-COPY --from=builder /opt/app/target/*.jar /opt/app/*.jar
-ENTRYPOINT ["java", "-jar", "/opt/app/*.jar" ]
+
+# Copiar el archivo JAR construido desde la etapa de construcción
+COPY --from=builder /opt/app/target/*.jar /opt/app/app.jar
+
+# Comando de entrada para ejecutar la aplicación
+ENTRYPOINT ["java", "-jar", "/opt/app/app.jar"]
