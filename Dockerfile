@@ -6,5 +6,6 @@ COPY mvnw pom.xml ./
 RUN ./mvnw dependency
 COPY ./src ./src
 RUN chmod +x mvnw
+RUN echo 'LS'
 RUN ls
 RUN ./mvnw clean install
