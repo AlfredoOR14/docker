@@ -1,17 +1,52 @@
 pipeline {
     agent any
-
+    
     environment {
-        DOCKERFILE_PATH = '.'
-        IMAGE_NAME = 'demo'
-        WORKSPACE_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\docker'
+        SONAR_TOKEN = credentials('SonarQube')
     }
-
+    
     stages {
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                bat "docker build -t ${IMAGE_NAME} -f ${DOCKERFILE_PATH}\\Dockerfile ."
+                // Clonar el repositorio
+                checkout scm
             }
+        }
+        
+        stage('Build') {
+            steps {
+                // Compilar el proyecto de Spring Boot
+                bat './mvnw clean package'
+            }
+        }
+        
+        stage('SonarQube analysis') {
+            steps {
+                script {
+                    // Obtener la configuración del servidor SonarQube
+                    def sonarQubeServer = getSonarQubeServer('SonarQube')
+                    def sonarQubeURL = sonarQubeServer.get('url')
+                    def sonarQubeToken = sonarQubeServer.get('credentialsId')
+                    
+                    // Ejecutar el análisis de SonarQube
+                    def scannerHome = tool 'SonarQubeScanner'
+                    withSonarQubeEnv('SonarQube Server') {
+                        bat "${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=nombre-del-proyecto \
+                            -Dsonar.sources=src \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.host.url=${sonarQubeURL} \
+                            -Dsonar.login=${sonarQubeToken}"
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Limpiar el ambiente después de la ejecución
+            cleanWs()
         }
     }
 }
